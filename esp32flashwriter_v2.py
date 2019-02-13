@@ -1,6 +1,8 @@
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import filedialog
+import tkinter.messagebox as tkMessageBox
+
 import serial.tools.list_ports
 import esptool
 import os
@@ -26,7 +28,6 @@ class App(ttk.Frame):
                        'header' :('Times New Roman','14','bold'),
                        'header1':('Times New Roman','12','normal','underline'),
                        'data'   :('Times New Roman','10','normal') }
-
         self._set_style()
         self._create_widgets()
 
@@ -50,7 +51,7 @@ class App(ttk.Frame):
     def _create_widgets( self ):
         self.columnconfigure( 1, weight=1 )
         
-        self.device = ESPDevice( self, self.style, self.fonts )
+        self.device = ESP32Device( self, self.style, self.fonts )
         self.src_dest = SourcesDestinations( self, self.device, self.style,
                                              self.fonts )
         self.write_flash = WriteFlash( self, self.device, self.src_dest,
@@ -61,8 +62,20 @@ class App(ttk.Frame):
         self.write_flash.grid( row=2, column=0, padx=10, pady=[5,10], sticky='we' )
 
         
+    def ask_quit( self ):
+        '''Confirmation to quit application.'''
+        if tkMessageBox.askokcancel( "Quit","ESP32 Flash Writer?" ):
+            self.src_dest.close_addr_filename() #Close openned firmware (and files)
+            self.device.destroy_port()          #Close port after serial.Serial() instance is freed.
+            self.master.destroy()               #Destroy the Tk Window instance.
+            # Note: After initialzing pygame.mixer, it will preoccupy an entire CPU core.
+            #       Before destroying the Tk Window, ensure pygame.mixer is quitted too else
+            #       pygame.mixer will still be running in the background despite destroying the 
+            #       Tk Window instance.
 
-class ESPDevice(ttk.Labelframe):
+
+
+class ESP32Device(ttk.Labelframe):
 
     def __init__( self, master=None, style=None, fonts=None, *args, **kw ):
         super().__init__( master, *args, **kw )
@@ -155,8 +168,21 @@ class ESPDevice(ttk.Labelframe):
         self._detect_esp_progress_update_v1()
 
         try:
-            self.esp = esptool.ESP32ROM( self.port.get(), self.baud.get(), #trace_enabled=True,
+            self.esp = esptool.ESP32ROM( self.port.get(), self.baud.get(),
+                                         trace_enabled=True,
                                          )
+            pprint( self.esp.__dict__ )
+            #Its attributes:
+            # self.esp._port - is an instance of serial.Serial() or a compatible object
+            #                  see https://pythonhosted.org/pyserial/pyserial_api.html?highlight=setdtr#serial.Serial
+            #                - It will close the defined serial port when self.esp._port is freed, i.e.
+            #                  when tk.Tk() instance is destroyed. 
+            #                - set self.esp._port.baud
+            # self._slip_reader - is a generator to read SLIP packets from the
+            #                     defined serial port in self.esp._port.
+            # self._trace_enabled - denotes wheather tracing is activated.
+            #                       For debugging. Default value is "False"
+            # self._last_trace - stores time.time()
             self.esp.connect()
         except (esptool.FatalError, OSError) as err:
             self.esp = None
@@ -185,11 +211,10 @@ class ESPDevice(ttk.Labelframe):
             flid_lowbyte = (flash_id >> 16) & 0xFF
             device = '{:02x}{:02x}'.format( (flash_id >> 8) & 0xff, flid_lowbyte )
             
-            #flashsize = 'Detected flash size: %s' % ( esptool.DETECTED_FLASH_SIZES.get( flid_lowbyte, "Unknown" ) )
-            flashsize = '{}'.format( esptool.DETECTED_FLASH_SIZES.get( flid_lowbyte, "4MB" ) )
+            flashsize = esptool.DETECTED_FLASH_SIZES.get( flid_lowbyte, "Unknown")
+            flashsize = '{}'.format( '4MB' if flashsize == "Unknown" else flashsize )
 
             return mac, features, manufacturer, device, flashsize
-
 
         if not self.detecting:
             if not self.esp:
@@ -226,6 +251,10 @@ class ESPDevice(ttk.Labelframe):
             print(S, ' is not allowed.')
             return False
 
+    def destroy_port( self ):
+        self.esp._port.__del__() # Close serial port when serial.Serial() instance is freed
+        #self.esp._port.close() # Close serial port immediately.
+
 
 
 class SourcesDestinations(ttk.Labelframe):
@@ -234,7 +263,7 @@ class SourcesDestinations(ttk.Labelframe):
         super().__init__( master, *args, **kw )
         #Attributes
         self.master = master
-        self.device = device # an instance of ESPDevice()
+        self.device = device # an instance of ESP32Device()
         self.style = style
         self.fonts = fonts
         self._writes = []    # list of ttk.Checkbutton()
@@ -330,6 +359,11 @@ class SourcesDestinations(ttk.Labelframe):
         print( '\nself.addr_filename = ', self.addr_filename )
 
 
+    def close_addr_filename( self ):
+        for _, filename in self.addr_filename:
+            filename.close()
+
+
         
 class WriteFlash(ttk.Labelframe):
 
@@ -338,8 +372,8 @@ class WriteFlash(ttk.Labelframe):
         super().__init__( master, *args, **kw )
         #Attributes
         self.master = master
-        self.device = device # an instance of ESPDevice()
-        self.src_dest = src_dest # an instance of ESPDevice()
+        self.device = device # an instance of ESP32Device(ttk.Labelframe) object
+        self.src_dest = src_dest # an instance of SourcesDestinations(ttk.Labelframe) object
         self.style = style
         self.fonts = fonts
         #Methods Initialized
@@ -357,10 +391,11 @@ class WriteFlash(ttk.Labelframe):
 
 
     def _set_args(self):
-        self.args = Args( self.device )
+        self.args = Args()
         self.args.chip = 'esp32'
         self.args.baud = self.device.baud.get()
         self.args.port = self.device.port.get()
+        self.args.no_stub = False
 
         self._set_args_flash_size()
         self._set_args_addr_filename()
@@ -373,6 +408,7 @@ class WriteFlash(ttk.Labelframe):
                 self.args.flash_size = key
                 break
         print('\nflash_size in bytes =', esptool.flash_size_bytes( self.args.flash_size))
+        self.device.esp.flash_set_parameters( esptool.flash_size_bytes( self.args.flash_size ) )
         if self.args.flash_size == 'detect':
             raise Exception( "Invalid flash size used.")
 
@@ -391,15 +427,45 @@ class WriteFlash(ttk.Labelframe):
         self._set_args()
         args = self.args
         esp = self.device.esp
+        esp.flush_input()
+        #esp.connect()
+        #esp._slip_reader = esptool.slip_reader(esp._port, esp.trace)
+
+        if not args.no_stub:
+            print('if not args.no_stub:')
+            esp = esp.run_stub()
+
+        # override common SPI flash parameter stuff if configured to do so
+        if hasattr(args, "spi_connection") and args.spi_connection is not None:
+            if esp.CHIP_NAME != "ESP32":
+                raise FatalError("Chip %s does not support --spi-connection option." % esp.CHIP_NAME)
+            print("Configuring SPI flash mode...")
+            esp.flash_spi_attach(args.spi_connection)
+        elif args.no_stub:
+            print("Enabling default SPI flash mode...")
+            # ROM loader doesn't enable flash unless we explicitly do it
+            esp.flash_spi_attach(0)
+
+        #if hasattr(args, "flash_size"):
+        #    print("Configuring flash size...")
+        #    esptool.detect_flash_size(esp, args)
+        #    esp.flash_set_parameters( esptool.flash_size_bytes(args.flash_size) )
+
         print('\nesp.__dict__ = ', esp.__dict__)
+        print('\nesp._port.__dict__ = ', esp._port.__dict__)
         print('\nargs.__dict__ = ', args.__dict__)
 
-        '''try:
+        try:
             esptool.write_flash( esp, args )
         except esptool.FatalError:
             raise
-        '''
+        else:
+            print('Hard resetting via RTS pin...')
+            esp.hard_reset()
 
+        #esp._port.close()
+
+        '''
         # set args.compress based on default behaviour:
         # -> if either --compress or --no-compress is set, honour that
         # -> otherwise, set --compress unless --no-stub is set
@@ -419,6 +485,7 @@ class WriteFlash(ttk.Labelframe):
                 raise FatalError(("File %s (length %d) at offset %d will not fit in %d bytes of flash. " +
                                  "Use --flash-size argument, or change flashing address.")
                                  % (argfile.name, argfile.tell(), address, flash_end))
+        #return to start of file
         argfile.seek(0)
 
         if args.erase_all:
@@ -452,10 +519,12 @@ class WriteFlash(ttk.Labelframe):
                 print('esp.FLASH_WRITE_SIZE = ', esp.FLASH_WRITE_SIZE)
                 print('esp.IS_STUB = ', esp.IS_STUB)
                 print('ratio = ', ratio)
+                #Write block to flash, send compressed
                 blocks = esp.flash_defl_begin(uncsize, len(image), address)
             else:
                 ratio = 1.0
                 print('ratio = ', ratio)
+                #Write block to flash, send uncompressed
                 blocks = esp.flash_begin(uncsize, address)
             print('blocks = ', blocks)
             
@@ -468,7 +537,7 @@ class WriteFlash(ttk.Labelframe):
                 sys.stdout.flush()
                 block = image[0:esp.FLASH_WRITE_SIZE]
                 if args.compress:
-                    esp.flash_defl_block(block, seq, timeout=DEFAULT_TIMEOUT * ratio * 2)
+                    esp.flash_defl_block(block, seq, timeout=esptool.DEFAULT_TIMEOUT * ratio * 2)
                 else:
                     # Pad the last block
                     block = block + b'\xff' * (esp.FLASH_WRITE_SIZE - len(block))
@@ -492,10 +561,10 @@ class WriteFlash(ttk.Labelframe):
                     print('File  md5: %s' % calcmd5)
                     print('Flash md5: %s' % res)
                     print('MD5 of 0xFF is %s' % (hashlib.md5(b'\xFF' * uncsize).hexdigest()))
-                    raise FatalError("MD5 of file does not match data in flash!")
+                    raise esptool.FatalError("MD5 of file does not match data in flash!")
                 else:
                     print('Hash of data verified.')
-            except NotImplementedInROMError:
+            except esptool.NotImplementedInROMError:
                 pass
 
         print('\nLeaving...')
@@ -513,6 +582,7 @@ class WriteFlash(ttk.Labelframe):
             print('Verifying just-written flash...')
             print('(This option is deprecated, flash contents are now always read back after flashing.)')
             esptool.verify_flash(esp, args)
+        '''
         
 
 def pad_to(data, alignment, pad_character=b'\xFF'):
@@ -566,9 +636,10 @@ def _update_image_flash_params(esp, address, args, image):
     return image
 
 
+
 class Args(object):
 
-    def __init__( self, device ):
+    def __init__( self ):
         self.chip = None
         self.port = None
         self.baud = esptool.ESPLoader.ESP_ROM_BAUD
@@ -629,6 +700,8 @@ def main():
     app = App( root )
     app.grid(row=0, column=0, sticky='nsew')
 
+    #Activate Tk window mainloop to track GUI events
+    root.protocol("WM_DELETE_WINDOW", app.ask_quit) #Tell Tk window instance what to do before it is destroyed.
     root.mainloop()
 
 
