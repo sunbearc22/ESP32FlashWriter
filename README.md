@@ -1,7 +1,7 @@
 # ESP32FlashWriter
 
 <p align="center">
-  <img width="460" height="300" src="https://github.com/sunbearc22/ESP32FlashWriter/blob/master/image/esp32flashwrite_GUI.png">
+  <img width="682" height="420" src="https://github.com/sunbearc22/ESP32FlashWriter/blob/master/image/esp32flashwrite_GUI.png">
 </p>
 
 An easy to use GUI that you can use to connect with your ESP32 devices and update its firmware. 
@@ -12,18 +12,18 @@ An easy to use GUI that you can use to connect with your ESP32 devices and updat
 
 Try it. Appreciate your feedback(s). Do alert me on issue(s) with using it. Thank you.
 
+## OS Prerequisites:
+- Linux 
+
 ## Software Prerequisites:
 - python 3
 - tkinter v8.6
 - [esptool.py v2.6](https://github.com/espressif/esptool)
 - [pyserial v3.4](https://github.com/pyserial/pyserial)
 
-## OS Prerequisites:
-- Linux 
+## Firmware
+- [Micropython](https://micropython.org/download/), [ESP32](https://www.espressif.com/en/products/hardware/esp32/resources)
 
 ## Hardware Prerequisites:
 - ESP32 module, ESP32 DevKits
 - USB/Serial data connectors/cables
-
-## Firmware
-- [Micropython](https://micropython.org/download/), [ESP32](https://www.espressif.com/en/products/hardware/esp32/resources)
