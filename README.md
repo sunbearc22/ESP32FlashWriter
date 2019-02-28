@@ -1,6 +1,6 @@
 # ESP32FlashWriter
 
-Work in progress----
+![alt text](https://github.com/sunbearc22/ESP32FlashWriter/tree/master/image)
 
 Status:
 - Able to detect esp32 development kit v1
