@@ -2,7 +2,8 @@
 
 ![alt text](https://github.com/sunbearc22/ESP32FlashWriter/blob/master/image/esp32flashwrite_GUI.png)
 
-Status:
-- Able to detect esp32 development kit v1
-- Able to detect firmware / python file that is to be written to esp32 flash.
-- Ability to write firmware/file to flash under development.....
+An easy to use GUI that you can use to connect with your ESP32 devices and update its firmware. Simply plug in your device(s) via USB/Serial cable to your Linux OS computer and select your device port and the baud (default baud is 11520 bps). The port selection will trigger the connection. In the event your ESP32 becomes unplugged after it is connected, the GUI will notify you to replug and reselect your device port.  
+
+To update your ESP32 firmware, simply click on the folder icon to select your firmare, decide if you want to erase the entire flash or not, and then click **WRITE** to update your ESP32 firmware. 
+
+Please try it and alert me on issue(s) that you may encounter with using it. Thank you.
