@@ -122,7 +122,6 @@ class ESP32Device(ttk.Labelframe):
         
 
     def _create_widgets( self ):
-        print( '\ndef _create_widgets( self ):' )
         default = self.fonts['default']
         
         lb_title       = ttk.Label( self, text='ESP32 Device', style='header.TLabel' )
@@ -176,7 +175,6 @@ class ESP32Device(ttk.Labelframe):
 
     #PostCommand:
     def _list_ports( self ):
-        print( '\ndef _list_ports( self ):' )
         devices = [ port.device for port in serial.tools.list_ports.grep('ttyUSB') ]
         # In module "serial.tools.list_ports", its .grep() method returns 
         #  an iterable of its ListPortInfo class object
@@ -214,8 +212,8 @@ class ESP32Device(ttk.Labelframe):
         self.connecting=False when connected or when connection fails.'''
         self._sop_for_connecting()
 
-        ports = self.ports['values']; print("ports =", ports)
-        port = self.port.get(); print("port =", port) 
+        ports = self.ports['values']
+        port = self.port.get()
         if not ports:
             #No port detected
             self._sop_for_not_connected()
@@ -275,7 +273,7 @@ class ESP32Device(ttk.Labelframe):
                print('picocom is using port')
                return True
 
-        #Todo: Need a more general algorithim to determine wheater the port is
+        #Todo: Need a more general algorithim to determine whether the port is
         #      used by other applications.
 
         print('device is available.')
@@ -368,7 +366,7 @@ class ESP32Device(ttk.Labelframe):
                 
         if not self.connecting:
             if self.esp:
-                print('Connected')
+                # Connected
                 try: 
                     chip_type = self.esp.get_chip_description()
                 except esptool.FatalError:
@@ -389,11 +387,10 @@ class ESP32Device(ttk.Labelframe):
                 #print( status )
                 self.connected = True
             else:
-                print( 'Fail to Connect.' )
-                print( 'self.status.get() = ', self.status.get() )
+                # Fail to Connect.
                 self.connected = False
         else:
-            print('Connecting')
+            # Connecting
             self.after(500, self._monitor_esp_connection) # Call this method after 500 ms.
 
 
