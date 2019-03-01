@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-'''A GUI to detect ESP32 devices and write firmware to the ESP32 flash.
+'''A GUI to connect with ESP32 devices and write firmware to the ESP32 flash.
 
 Repository: https://github.com/sunbearc22/ESP32FlashWriter
 
