@@ -17,6 +17,9 @@ Try it. Appreciate your feedback(s). Do alert me on issue(s) with using it. Than
 2. Open a terminal, go to your downloaded repository directory and run `python3 esp32flashwriter_v4_0.py`, or
 3. Run `esp32flashwriter_v4_0.py` via your integrated development environment (IDE) like python3-idle, PyCharm, etc...
 
+## Firmware
+- [Micropython](https://micropython.org/download/), [ESP32](https://www.espressif.com/en/products/hardware/esp32/resources)
+
 ## OS Prerequisites:
 - Linux 
 
@@ -25,9 +28,6 @@ Try it. Appreciate your feedback(s). Do alert me on issue(s) with using it. Than
 - tkinter v8.6
 - [esptool.py v2.6](https://github.com/espressif/esptool)
 - [pyserial v3.4](https://github.com/pyserial/pyserial)
-
-## Firmware
-- [Micropython](https://micropython.org/download/), [ESP32](https://www.espressif.com/en/products/hardware/esp32/resources)
 
 ## Hardware Prerequisites:
 - ESP32 module, ESP32 DevKits
