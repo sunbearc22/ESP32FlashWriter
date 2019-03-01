@@ -29,7 +29,7 @@ import esptool
 import os
 from pprint import pprint
 from serial.serialutil import SerialException, portNotOpenError
-from termios import error as TerminosError
+from termios import error as TermiosError
 
 
 
@@ -70,7 +70,7 @@ class App(ttk.Frame):
         
         self.device = ESP32Device( self, self.style, self.fonts )
         self.flashfirmware = FlashFirmware( self, self.device, self.style,
-                                             self.fonts )
+                                            self.fonts )
         self.device.grid(        row=0, column=0, padx=10, pady=[10,5], sticky='we' )
         self.flashfirmware.grid( row=1, column=0, padx=10, pady=[5,10], sticky='we' )
 
@@ -78,7 +78,7 @@ class App(ttk.Frame):
     def ask_quit( self ):
         '''Confirmation to quit application.'''
         if tkMessageBox.askokcancel( "Quit","Quit ESP32FlashWriter?" ):
-            self.device.shutdown() #Close port of serial.Serial() instance if exist.
+            self.device.shutdown() #Close port of serial.Serial() instance.
             self.master.destroy() #Destroy the Tk Window instance.
 
 
@@ -215,8 +215,8 @@ class ESP32Device(ttk.Labelframe):
         port = self.port.get()
         if not ports:
             #No port detected
-            self._sop_for_not_connected()
             self.status.set( ESP32Device.MSG0 ) 
+            self._sop_for_not_connected()
         elif 'None_Found' not in ports : 
             #Port(s) detected
             portIsBusy = self._port_is_busy( port )
@@ -231,9 +231,9 @@ class ESP32Device(ttk.Labelframe):
                 self.connecting = False
                 self.status.set( ESP32Device.MSG1 )
         else:
-            #Port detected
-            self._sop_for_not_connected()
+            #Others
             self.status.set( ESP32Device.MSG0 )
+            self._sop_for_not_connected()
             self.connecting = False
 
 
@@ -248,6 +248,7 @@ class ESP32Device(ttk.Labelframe):
         self.manufacturer.set( '' )
         self.device.set( '' )
         self.flashsize.set( '' )
+        self.update_idletasks()
 
 
     def _sop_for_connecting( self ):
@@ -263,14 +264,14 @@ class ESP32Device(ttk.Labelframe):
         
 
     def _port_is_busy( self, port):
-        #Check if picocom is using the port
+        #Check if picocom or minicom is using the port
         portname = os.path.basename( port )
         linux_lock = "/var/lock/"
         files = os.listdir( linux_lock )       
         for file in files:
            filename = os.path.basename( file )
            if portname in filename:
-               print('picocom is using port')
+               print('picocom or minicom is using port')
                return True
 
         #Todo: Need a more general algorithim to determine whether the port is
@@ -383,8 +384,7 @@ class ESP32Device(ttk.Labelframe):
                     self.device.set('{:25}{}{}'.format('','Device: ',device) )
                     self.flashsize.set('{:25}{}{}'.format('','Flash size: ', flashsize) )
                     self._connected = True
-                    self._check_connection() # Check esp32 device is connected every 1s.
-                #print( status )
+                    self._check_connection() # Check esp32 device connection regularly.
                 self.connected = True
             else:
                 # Fail to Connect.
@@ -406,7 +406,7 @@ class ESP32Device(ttk.Labelframe):
                 self._connected = False
                 print( 'SerialException: ', err )
                 self.after( 500, self._check_connection ) # Check connection every 500ms.
-            except TerminosError as err:
+            except TermiosError as err:
                 self._connected = False
                 print( 'termios.error: ', err )
                 self.after( 500, self._check_connection ) # Check connection every 500ms.
@@ -417,8 +417,9 @@ class ESP32Device(ttk.Labelframe):
                 self.after( 500, self._check_connection ) # Check connection every 500ms.
             else:
                 #Some data was received
-                self.after( 2000, self._check_connection ) # Check connection every 5s.
+                self.after( 2000, self._check_connection ) # Check connection every 2s.
         else:
+            self.status.set( ESP32Device.MSG0 )
             self._sop_for_not_connected()
 
 
@@ -467,7 +468,6 @@ class FlashFirmware(ttk.Labelframe):
 
         lb_title = ttk.Label( self, text='Flash Firmware', style='header.TLabel' )
         self['labelwidget'] = lb_title
-
         #Row0
         lb_source = ttk.Label( self, text='Source', style='header1.TLabel' )
         lb_byte   = ttk.Label( self, text='Bytes', style='header1.TLabel' )
@@ -489,12 +489,10 @@ class FlashFirmware(ttk.Labelframe):
         self._no  = ttk.Radiobutton( self, text='No', value=False, variable=self._erase_all )
         self._yes.bind( '<KeyPress-Return>', self._set_erase_all )
         self._no.bind( '<KeyPress-Return>', self._set_erase_all )
-        
         #Row2
         self._write = ttk.Button( self, text='WRITE', command=self._write_flash )
         lb_detect = ttk.Label( self, textvariable=self.status, width=40,
                                style='write.TLabel')
-        
         # Position widgets 
         lb_source.grid( row=0, column=0, padx=[10, 0], pady=[10,0], )
         lb_byte.grid(   row=0, column=2, padx=[10, 0], pady=[10,0], )
@@ -510,7 +508,6 @@ class FlashFirmware(ttk.Labelframe):
         lb_detect.grid( row=2, column=0, padx=10, pady=[10,10], columnspan=3, sticky='nsew', )
 
        
-
     #### Widget Methods
     def _get_sources( self, event=None ):
         filename = filedialog.askopenfilename(
@@ -602,12 +599,9 @@ class FlashFirmware(ttk.Labelframe):
             esptool.detect_flash_size(esp, args)
             esp.flash_set_parameters( esptool.flash_size_bytes(args.flash_size) )
 
-        print('\nargs = ')
-        pprint( args.__dict__ )
-        print('\nesp = ')
-        pprint( esp.__dict__ )
-        print('\nesp._port = ')
-        pprint( esp._port.__dict__ )
+        print('\nargs = '); pprint( args.__dict__ )
+        print('\nesp = '); pprint( esp.__dict__ )
+        print('\nesp._port = '); pprint( esp._port.__dict__ )
 
         #4. Start writing
         self._writing = True
@@ -777,3 +771,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
