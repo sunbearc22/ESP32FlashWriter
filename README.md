@@ -1,7 +1,7 @@
 # ESP32FlashWriter
 
 <p align="center">
-  <img width="682" height="420" src="https://github.com/sunbearc22/ESP32FlashWriter/blob/master/image/esp32flashwrite_GUI.png">
+  <img width="682" height="420" src="https://github.com/sunbearc22/ESP32FlashWriter/blob/master/image/esp32flashwrite_GUI0.png">
 </p>
 
 An easy to use GUI that you can use to connect with your ESP32 devices and update its firmware. 
