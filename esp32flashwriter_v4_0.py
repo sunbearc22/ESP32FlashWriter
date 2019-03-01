@@ -77,7 +77,7 @@ class App(ttk.Frame):
         
     def ask_quit( self ):
         '''Confirmation to quit application.'''
-        if tkMessageBox.askokcancel( "Quit","Quit ESP32 SPI Flash Writer?" ):
+        if tkMessageBox.askokcancel( "Quit","Quit ESP32 Flash Writer?" ):
             self.device.shutdown() #Close port of serial.Serial() instance if exist.
             self.master.destroy() #Destroy the Tk Window instance.
 
