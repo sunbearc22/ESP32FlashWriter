@@ -12,6 +12,9 @@ An easy to use GUI that you can use to connect with your ESP32 devices and updat
 
 Try it. Appreciate your feedback(s). Do alert me on issue(s) with using it. Thank you.
 
+## How to use it:
+Clone or download this repository to your local machine and run `esp32flashwriter_v4_0.py`.
+
 ## OS Prerequisites:
 - Linux 
 
