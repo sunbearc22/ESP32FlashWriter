@@ -77,7 +77,7 @@ class App(ttk.Frame):
         
     def ask_quit( self ):
         '''Confirmation to quit application.'''
-        if tkMessageBox.askokcancel( "Quit","Quit ESP32 Flash Writer?" ):
+        if tkMessageBox.askokcancel( "Quit","Quit ESP32FlashWriter?" ):
             self.device.shutdown() #Close port of serial.Serial() instance if exist.
             self.master.destroy() #Destroy the Tk Window instance.
 
@@ -159,7 +159,6 @@ class ESP32Device(ttk.Labelframe):
                                  style='device.TButton', command=self._reset_baud )
         baud_reset.bind('<KeyPress-Return>', self._reset_baud)
         
-        
         lb_detect.grid( row=1, column=0, padx=10, pady=[0,0], sticky='ew',  )
         lb_mac.grid(         row=2, column=0, padx=10, pady=[0,0], sticky='ew',  )
         lb_feature.grid(     row=3, column=0, padx=10, pady=[0,0], sticky='ew', columnspan=4  )
@@ -232,6 +231,7 @@ class ESP32Device(ttk.Labelframe):
                 self.connecting = False
                 self.status.set( ESP32Device.MSG1 )
         else:
+            #Port detected
             self._sop_for_not_connected()
             self.status.set( ESP32Device.MSG0 )
             self.connecting = False
@@ -761,8 +761,9 @@ class Args(object):
 
 def main():
     root = tk.Tk()
+    root.resizable(width=False, height=False)
     root.title('ESP32 FLASH WRITER')
-    root.geometry('680x390+0+24')
+    root.geometry('678x390+0+24')
     root.rowconfigure(0, weight=1)
     root.columnconfigure(0, weight=1)
 
