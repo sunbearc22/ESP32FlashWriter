@@ -10,7 +10,7 @@ An easy to use GUI that you can use to connect with your ESP32 devices and updat
 
 2. To update your ESP32 firmware, simply click on the folder icon to select your new firmware, decide if you want to erase the entire flash or not, and then click **WRITE** to update your ESP32 firmware.
 
-3. You can use your keyboard <kbd>Tab</kbd> key to toggle between the fields in the GUI. Pressing the <kbd>Return</kbd> key will select the field. To exit the selected field, press the <kbd>Esc</kbd> key. Scrolling within the **Port** and **Baud** fields can be done by pressing the <kbd>up</kbd> and <kbd>down</kbd> arrow keys. 
+3. You can use your keyboard <kbd>Tab</kbd> key to toggle between the fields in the GUI. Pressing the <kbd>Return</kbd> key will select the field. To exit the selected field, press the <kbd>Esc</kbd> key. Scrolling within the **Port** and **Baud** fields can be done by pressing the <kbd>&#8593;</kbd> and <kbd> &#8595;</kbd> arrow keys. 
 
 Try it. Appreciate your feedback(s). Do alert me on issue(s) with using it. Thank you.
 
