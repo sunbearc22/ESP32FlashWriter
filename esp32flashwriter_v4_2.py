@@ -5,23 +5,24 @@
 Repository: https://github.com/sunbearc22/ESP32FlashWriter
 
 Tested on:
-   python  -- v3.6  -- Programming language
-   tkinter -- v8.6  -- GUI development
-   esptool -- v2.6  -- Espressif software to communicate and instruct esp32 device
-   pyserial-- v3.4  -- Comincate with serial port
-   Ubuntu  -- 16.04 -- OS
-   Windows -- 10    -- OS
+   python  -- v3.6              -- Programming language
+   tkinter -- v8.6              -- GUI development
+   esptool -- v2.6              -- Espressif software to communicate and instruct esp32 device
+   pyserial-- v3.4              -- Comincate with serial port
+   Ubuntu  -- 16.04             -- Linux Distribution
+   Linux   -- 4.10.0-42-generic -- OS
+   Windows -- 10                -- OS
 
    Hardware(s): ESP32 DEVKITV1 with ESP32D0WDQ6(revision1)
 
 Acknowledgements:
-- icon images from https://www.iconfinder.com/
+- icon images from https://www.iconfinder.com/ with amendments.
 - Like to thank Angus Gratton at https://github.com/projectgus for advices on
   handling issues related to esptool.py. 
 
 Author     : sunbear.c22@gmail.com
 Created on : 2019-02-28  -- Works in Linux.
-Modified on: 2019-03-08  -- Works in Win10 too.
+Modified on: 2019-03-08  -- Works in Windows 10 too.
                          -- Fix: "WRITE" can be clicked again to overwrite previous firmware write.
 '''
 
@@ -820,3 +821,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
