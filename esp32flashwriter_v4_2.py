@@ -257,6 +257,7 @@ class ESP32Device(ttk.Labelframe):
         self.manufacturer.set( '' )
         self.device.set( '' )
         self.flashsize.set( '' )
+        self.baud.set( esptool.ESPLoader.ESP_ROM_BAUD )
         self.update_idletasks()
 
 
@@ -402,14 +403,13 @@ class ESP32Device(ttk.Labelframe):
                     self.flashsize.set('{:25}{}{}'.format('','Flash size: ', flashsize) )
                     self._connected = True
                     self._check_connection() # Check esp32 device is connected regularly.
-                #print( status )
                 self.connected = True
             else:
                 # Fail to Connect.
                 self.connected = False
         else:
             # Connecting
-            self.after(500, self._monitor_esp_connection) # Call this method after 500 ms.
+            self.after( 500, self._monitor_esp_connection ) # Call this method after 500 ms.
 
 
     def _check_connection( self ):
@@ -421,8 +421,8 @@ class ESP32Device(ttk.Labelframe):
         if self._connected:
             try:
                 in_bytes = self.esp._port.in_waiting
-                _ = self.esp._port.read(in_bytes)
-            except (SerialException, OSError) as err:
+                _ = self.esp._port.read( in_bytes )
+            except ( SerialException, OSError ) as err:
                 self._connected = False
                 print( 'Disconnection event detected.' )
                 self.after( 500, self._check_connection ) # Check connection every 500ms.
@@ -431,7 +431,7 @@ class ESP32Device(ttk.Labelframe):
                 #print('self._connected = True')
                 self.after( 2000, self._check_connection ) # Check connection every 2s.
         else:
-            print( 'Disconnected' )
+            print( 'Disconnected.\n' )
             if self.esp:
                 self.esp._port.close()
             self._sop_for_not_connected()
@@ -582,7 +582,7 @@ class FlashFirmware(ttk.Labelframe):
 
         #2. Create agrs
         if not self._create_args():
-            print( "\nFlashFirmware: Failed to create args." )
+            print( "\nFlashFirmware: Failed to create args.\n" )
             self._post_write_flash_sop()
             return False
         args = self.args
@@ -601,7 +601,7 @@ class FlashFirmware(ttk.Labelframe):
                     return False
         else:
             self._post_write_flash_sop()
-            print( "\nFlashFirmware: esp needs to be connected first." )
+            print( "\nFlashFirmware: esp needs to be connected first.\n" )
             print( ' -- ', err.__str__() )
             return False
                 
