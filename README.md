@@ -35,5 +35,8 @@ Try it. Appreciate your feedback(s). Do alert me on issue(s) with using it. Than
 - [pyserial v3.4](https://github.com/pyserial/pyserial)
 
 ## Hardware Prerequisites:
-- ESP32 module, ESP32 DevKits
+- ESP32 chip or ESP32 DevKits board
 - USB/Serial data connectors/cables
+
+## Remarks
+This GUI script is a work-in-progress. I have used it to write firmware to a ESP32D0WDQ6(revision1) chip in a ESP32 DEVKITV1 board. Please use it at your own risk; no warranty is given. Appreciate if you can let me know the type of ESP32 chip and board that you have been able to write firmware on. Thank you.
