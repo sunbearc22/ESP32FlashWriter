@@ -16,14 +16,17 @@ Try it. Appreciate your feedback(s). Do alert me on issue(s) with using it. Than
 
 ## How to use it:
 1. Clone or download this repository to your local machine.
-2. Open a terminal, go to your downloaded repository directory and run `python3 esp32flashwriter_v4_2.py`, or
-3. Run `esp32flashwriter_v4_2.py` via your integrated development environment (IDE) like python3-idle, PyCharm, etc...
+2. Ensure softwares identified in [Software Prerequisities](https://github.com/sunbearc22/ESP32FlashWriter/blob/master/README.md#software-prerequisites) are installed. 
+3. Execute esp32flashwriter:
+   - Open a terminal, go to your downloaded repository directory and run `python3 esp32flashwriter_v4_2.py`, or
+   - Run `esp32flashwriter_v4_2.py` via your integrated development environment (IDE) like python3-idle, PyCharm, etc...
 
 ## Firmware
 - [Micropython](https://micropython.org/download/), [ESP32](https://www.espressif.com/en/products/hardware/esp32/resources)
 
 ## OS Prerequisites:
-- Linux 
+- Linux
+- Windows 10
 
 ## Software Prerequisites:
 - python 3
