@@ -21,7 +21,7 @@ Try it. Appreciate your feedback(s). Do alert me on issue(s) with using it. Than
    - Open a terminal, go to your downloaded repository directory and run `python3 esp32flashwriter_v4_2.py`, or
    - Run `esp32flashwriter_v4_2.py` via your integrated development environment (IDE) like python3-idle, PyCharm, etc...
 
-## Firmware
+## Firmwares that you can write to ESP32 Flash:
 - [Micropython](https://micropython.org/download/), [ESP32](https://www.espressif.com/en/products/hardware/esp32/resources)
 
 ## OS Prerequisites:
