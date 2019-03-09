@@ -24,6 +24,7 @@ Author     : sunbear.c22@gmail.com
 Created on : 2019-02-28  -- Works in Linux.
 Modified on: 2019-03-08  -- Works in Windows 10 too.
                          -- Fix: "WRITE" can be clicked again to overwrite previous firmware write.
+             2019-03-09  -- GUI displays the progress of the "WRITE" stage in more detail.  
 '''
 
 import tkinter as tk
@@ -39,6 +40,12 @@ from serial.serialutil import SerialException
 
 import platform
 import time
+
+import hashlib
+import zlib
+import sys
+import time
+import struct
 
 
 class App(ttk.Frame):
@@ -574,7 +581,7 @@ class FlashFirmware(ttk.Labelframe):
     #### Commands
     def _write_flash( self ):
         #1.Setup widgets
-        self._status_color = 'blue'
+        #self._status_color = 'blue'
         self.style.configure( 'write.TLabel', foreground='blue' )
         self._write['state'] = 'disable'
         if self.device:
@@ -639,7 +646,8 @@ class FlashFirmware(ttk.Labelframe):
         self._completed = False
         self._update_status( 'Writing....' )
         try:
-            esptool.write_flash( esp, args )
+            #esptool.write_flash( esp, args )      #original
+            self._esptool_write_flash( esp, args ) #allow more detailed display of the write to flash progress.
         except esptool.FatalError:
             self._post_write_flash_sop()
             raise
@@ -663,8 +671,125 @@ class FlashFirmware(ttk.Labelframe):
 
 
     #### Command Methods
+    def _esptool_write_flash( self, esp, args ):
+        '''Method to write to flash.
+
+        This method implements the esptool.py v2.6 write_flash(esp, args)
+        function with some modifications. The modifications are to allow the
+        progress of the write_flash(esp, args) to be shown in this GUI class.'''
+        # set args.compress based on default behaviour:
+        # -> if either --compress or --no-compress is set, honour that
+        # -> otherwise, set --compress unless --no-stub is set
+        if args.compress is None and not args.no_compress:
+            args.compress = not args.no_stub
+
+        # verify file sizes fit in flash
+        msg = 'Verifying file sizes can fit in flash...'
+        self._update_status( msg ); print( msg )
+        flash_end = esptool.flash_size_bytes( args.flash_size )
+        for address, argfile in args.addr_filename:
+            argfile.seek(0,2)  # seek to end
+            if address + argfile.tell() > flash_end:
+                raise esptool.FatalError(("File %s (length %d) at offset %d will not fit in %d bytes of flash. " +
+                                 "Use --flash-size argument, or change flashing address.")
+                                 % (argfile.name, argfile.tell(), address, flash_end))
+            argfile.seek(0)
+
+        if args.erase_all:
+            msg = 'Erasing flash (this may take a while)...'
+            self._update_status( msg )
+            esptool.erase_flash( esp, args )
+
+        for address, argfile in args.addr_filename:
+            if args.no_stub:
+                #print( 'Erasing flash...' )
+                msg = 'Erasing flash...'
+                self._update_status( msg ); print( msg )
+            image = esptool.pad_to( argfile.read(), 4 )
+            if len(image) == 0:
+                #print( 'WARNING: File %s is empty' % argfile.name )
+                msg = 'WARNING: File %s is empty' % argfile.name
+                self._update_status( msg ); print( msg )
+                continue
+            image = esptool._update_image_flash_params( esp, address, args, image )
+            calcmd5 = hashlib.md5( image ).hexdigest()
+            uncsize = len( image )
+            if args.compress:
+                uncimage = image
+                image = zlib.compress( uncimage, 9 )
+                ratio = uncsize / len( image )
+                blocks = esp.flash_defl_begin( uncsize, len(image), address )
+            else:
+                ratio = 1.0
+                blocks = esp.flash_begin( uncsize, address )
+            argfile.seek(0)  # in case we need it again
+            seq = 0
+            written = 0
+            t = time.time()
+            while len(image) > 0:
+                #print( '\rWriting at 0x%08x... (%d %%)' % ( address + seq * esp.FLASH_WRITE_SIZE, 100 * (seq + 1) // blocks), end='' )
+                msg = 'Writing at 0x%08x... (%d %%)' % ( address + seq * esp.FLASH_WRITE_SIZE, 100 * (seq + 1) // blocks)
+                self._update_status( msg ); print( msg, end='' )
+                sys.stdout.flush()
+                block = image[ 0:esp.FLASH_WRITE_SIZE ]
+                if args.compress:
+                    esp.flash_defl_block( block, seq, timeout=esptool.DEFAULT_TIMEOUT * ratio * 2 )
+                else:
+                    # Pad the last block
+                    block = block + b'\xff' * ( esp.FLASH_WRITE_SIZE - len(block) )
+                    esp.flash_block( block, seq )
+                image = image[ esp.FLASH_WRITE_SIZE: ]
+                seq += 1
+                written += len(block)
+            t = time.time() - t
+            speed_msg = ""
+            if args.compress:
+                if t > 0.0:
+                    speed_msg = " (effective %.1f kbit/s)" % ( uncsize / t * 8 / 1000 )
+                print( 'Wrote %d bytes (%d compressed) at 0x%08x in %.1f seconds%s...' % ( uncsize, written, address, t, speed_msg ) )
+            else:
+                if t > 0.0:
+                    speed_msg = " (%.1f kbit/s)" % ( written / t * 8 / 1000 )
+                print( 'Wrote %d bytes at 0x%08x in %.1f seconds%s...' % ( written, address, t, speed_msg ) )
+            msg = 'Writing completed in %.1f seconds%s...' % ( t, speed_msg )
+            self._update_status( msg )
+            try:
+                res = esp.flash_md5sum( address, uncsize )
+                if res != calcmd5:
+                    print( 'File  md5: %s' % calcmd5 )
+                    print( 'Flash md5: %s' % res )
+                    print( 'MD5 of 0xFF is %s' % ( hashlib.md5( b'\xFF' * uncsize ).hexdigest() ) )
+                    raise esptool.FatalError("MD5 of file does not match data in flash!")
+                else:
+                    #print( 'Hash of data verified.' )
+                    msg = 'Hash of data verified.'
+                    self._update_status( msg ); print( msg )
+            except esptool.NotImplementedInROMError:
+                pass
+
+        print('\nLeaving...')
+
+        if esp.IS_STUB:
+            # skip sending flash_finish to ROM loader here,
+            # as it causes the loader to exit and run user code
+            esp.flash_begin(0, 0)
+            if args.compress:
+                esp.flash_defl_finish(False)
+            else:
+                esp.flash_finish(False)
+
+        if args.verify:
+            print( 'Verifying just-written flash...' )
+            print( '(This option is deprecated, flash contents are now always read back after flashing.)' )
+            msg = 'Verifying just-written flash...'
+            self._update_status( msg ); #print( msg )            
+            esptool.verify_flash( esp, args )
+            msg = '-- verify OK (digest matched)'
+            self._update_status( msg ); #print( msg )
+
+
     def _create_args(self):
-        self._update_status('Preprocessing: args....')
+        self._update_status( 'Preprocessing: args....' )
         
         self.args = Args()
         self.args.chip = 'esp32'
@@ -737,6 +862,8 @@ class FlashFirmware(ttk.Labelframe):
         self._completed = True
         self._write['state'] = 'normal'
         self.device.ports['state'] = 'normal'
+        self.style.configure( 'write.TLabel', foreground='black' )
+        self.update_idletasks()
 
 
     def _change_baud( self, esp, baud ):
@@ -821,4 +948,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
