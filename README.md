@@ -18,8 +18,8 @@ Try it. Appreciate your feedback(s). Do alert me on issue(s) with using it. Than
 1. Clone or download this repository to your local machine.
 2. Ensure softwares identified in [Software Prerequisities](https://github.com/sunbearc22/ESP32FlashWriter/blob/master/README.md#software-prerequisites) are installed. 
 3. Execute esp32flashwriter:
-   - Open a terminal, go to your downloaded repository directory and run `python3 esp32flashwriter_v4_2.py`, or
-   - Run `esp32flashwriter_v4_2.py` via your integrated development environment (IDE) like python3-idle, PyCharm, etc...
+   - Open a terminal, go to your downloaded repository directory and run `python3 esp32flashwriter.py`, or
+   - Run `esp32flashwriter.py` via your integrated development environment (IDE) like python3-idle, PyCharm, etc...
 
 ## Firmwares that you can write to ESP32 Flash:
 - [Micropython](https://micropython.org/download/), [ESP32](https://www.espressif.com/en/products/hardware/esp32/resources)
@@ -36,7 +36,7 @@ Try it. Appreciate your feedback(s). Do alert me on issue(s) with using it. Than
 
 ## Hardware Prerequisites:
 - ESP32 chip or ESP32 DevKits board
-- USB/Serial data connectors/cables
+- USB cable
 
 ## Remarks
-This GUI script is a work-in-progress. I have used it to write firmware to a ESP32D0WDQ6(revision1) chip in a ESP32 DEVKITV1 board. Please use it at your own risk; no warranty is given. Appreciate if you can let me know the type of ESP32 chip and board that you have been able to write firmware on. Thank you.
+This GUI script is a work-in-progress. I have used it to write firmware to a ESP32D0WDQ6(revision1) chip in a ESP32 DEVKITV1 board. Appreciate if you can share with me the type of ESP32 chip or board that you were able to use ESP32FLASHWRITER to write firmware on. Thank you.
