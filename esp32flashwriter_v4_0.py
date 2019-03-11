@@ -17,6 +17,8 @@ Acknowledgements:
 
 Author: sunbear.c22@gmail.com
 Date  : 2019-02-28
+
+Remark: 2019-03-08 - Replaced by esp32flashwriter_v4_2.py.
 '''
 
 import tkinter as tk
