@@ -39,4 +39,4 @@ Try it. Appreciate your feedback(s). Do alert me on issue(s) with using it. Than
 - USB cable
 
 ## Remarks
-This GUI script is a work-in-progress. I have used it to write firmware to a ESP32D0WDQ6(revision1) chip in a ESP32 DEVKITV1 board. Appreciate if you can share with me the type of ESP32 chip or board that you were able to use ESP32FLASHWRITER to connect with and/or write firmware on. Thank you.
+This GUI script is a work-in-progress. I have used it to write firmware to a ESP32D0WDQ6(revision1) chip in a ESP32 DEVKITV1 board. Appreciate if you can share with me the type of ESP32 chip or board that you were able to use ESP32FlashWriter to connect with, and/or write firmware on. Thank you.
