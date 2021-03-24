@@ -47,6 +47,8 @@ import sys
 import time
 import struct
 
+import socket
+
 
 class App(ttk.Frame):
 
@@ -301,8 +303,20 @@ class ESP32Device(ttk.Labelframe):
 
         elif 'Windows' in platform.system():
             #treat port as not busy; no algorithm yet.
-            #To do: Need an appropriate algorithm 
-            return False 
+            #To do: Need an appropriate algorithm
+            
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            result = True
+            for i in ["localhost","127.0.0.1","0.0.0.0"]:
+                try:
+                    sock.bind((i, 5000))
+                    result = False #port is not busy
+                    sock.close()
+                except:
+                    result = True #port is busy
+                    sock.close()
+                    break
+            return result 
              
 
     def _create_esp_connection( self ):
