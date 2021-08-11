@@ -20,6 +20,13 @@ Try it. Appreciate your feedback(s). Do alert me on issue(s) with using it. Than
 3. Execute esp32flashwriter:
    - Open a terminal, go to your downloaded repository directory and run `python3 esp32flashwriter.py`, or
    - Run `esp32flashwriter.py` via your integrated development environment (IDE) like python3-idle, PyCharm, etc...
+4. Select Port (and Baud if needed - default baud setting usually works). 
+   - For Linux: In case you encounter the error `PermissionError: [Errno 13] Permission denied: <your selected Port>`, you can open a terminal to issue two commands to fix this error.
+       -  `$ sudo usermod -a -G dialout "your username"`
+       -  `$ sudo chmod a+rw "your selected Port e.g. /dev/ttyUSB0"`
+       -  In ESP32FlashWriter, reselect the Port.
+6. Select firmware file to flash.
+7. Click "WRITE" to flash the selected firmware into ESP32.
 
 ## Firmwares that you can write to ESP32 Flash:
 - [Micropython](https://micropython.org/download/), [ESP32](https://www.espressif.com/en/products/hardware/esp32/resources)
@@ -39,4 +46,5 @@ Try it. Appreciate your feedback(s). Do alert me on issue(s) with using it. Than
 - USB cable
 
 ## Remarks
-This GUI script is a work-in-progress. I have used it to write firmware to a ESP32D0WDQ6(revision1) chip in a ESP32 DEVKITV1 board. Appreciate if you can share with me the type of ESP32 chip or board that you were able to use ESP32FlashWriter to connect with, and/or write firmware on. Thank you.
+- This GUI script is a work-in-progress. I have used it to write firmware to a ESP32D0WDQ6(revision1) chip in a ESP32 DEVKITV1 board. Appreciate if you can share with me the type of ESP32 chip or board that you were able to use ESP32FlashWriter to connect with, and/or write firmware on. Thank you.
+- Tested on 2021/08/11 in Ubuntu 20.04. `
